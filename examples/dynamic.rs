@@ -28,6 +28,7 @@ fn main() {
 		.run();
 }
 
+#[derive(Resource)]
 struct MyTileset {
 	/// This stores the handle to our tileset so it doesn't get unloaded
 	tiles: Option<Vec<TileHandle>>,
@@ -49,7 +50,7 @@ impl Default for MyTileset {
 /// Starts the tileset loading process
 fn load_tileset(mut my_tileset: ResMut<MyTileset>, asset_server: Res<AssetServer>) {
 	// You can dynamically load the TileDef config files
-	let asset_path = FileAssetIo::get_root_path().join("assets");
+	let asset_path = FileAssetIo::get_base_path().join("assets");
 	let dirt_path = asset_path.join("tiles/dirt.ron");
 	let glass_path = asset_path.join("tiles/glass.ron");
 
@@ -93,10 +94,12 @@ fn check_loaded(
 
 	// Build the tileset
 	let mut builder = TilesetBuilder::default();
-	let tiles = my_tileset.tiles.take();
-	for (group_id, tile) in tiles.unwrap().into_iter().enumerate() {
+	// We use a reference here because we still need to keep these strong handles loaded
+	// (the RawTileset will only store weak handles)
+	let tiles = my_tileset.tiles.as_ref().unwrap();
+	for (group_id, tile) in tiles.iter().enumerate() {
 		builder
-			.add_tile(tile, group_id as TileGroupId, &textures)
+			.add_tile(tile.clone(), group_id as TileGroupId, &textures)
 			.unwrap();
 	}
 
@@ -113,7 +116,6 @@ fn check_loaded(
 	// ```
 
 	my_tileset.raw_tileset = Some(raw_tileset);
-	my_tileset.tiles = None;
 	my_tileset.is_loaded = true;
 }
 
@@ -133,8 +135,8 @@ fn show_tileset(
 
 	// === Display Tileset === //
 	let texture = raw_tileset.texture().clone();
-	commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-	commands.spawn_bundle(SpriteBundle {
+	commands.spawn(Camera2dBundle::default());
+	commands.spawn(SpriteBundle {
 		texture,
 		transform: Transform::from_xyz(0.0, 0.0, 0.0),
 		..Default::default()
@@ -149,16 +151,16 @@ fn show_tileset(
 					let mut texture = handle.clone();
 					// Handles in the tileset are weak by default so we'll need to make it strong again so the image doesn't unload
 					texture.make_strong(&mut textures);
-					commands.spawn_bundle(SpriteBundle {
+					commands.spawn(SpriteBundle {
 						texture,
 						transform: Transform::from_xyz(0.0, 48.0, 0.0),
 						..Default::default()
 					});
 				}
-			}
+			},
 			TileIndex::Animated(start, end, speed) => {
 				// Do something  ✨ animated ✨
-			}
+			},
 		}
 	}
 

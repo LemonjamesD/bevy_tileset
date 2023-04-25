@@ -23,14 +23,14 @@ fn tileset_event_sys(
 	for event in event_reader.iter() {
 		match event {
 			AssetEvent::<Tileset>::Created { handle } => {
-				if let Some(tileset) = tilesets.get(handle.id) {
+				if let Some(tileset) = tilesets.get(handle) {
 					map.register_tileset(tileset, &handle);
 				}
-			}
+			},
 			AssetEvent::<Tileset>::Removed { handle } => {
 				map.deregister_tileset(&handle);
-			}
-			_ => {}
+			},
+			_ => {},
 		}
 	}
 }

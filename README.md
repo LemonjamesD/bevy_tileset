@@ -6,10 +6,10 @@
 Simple, configurable tilesets in Bevy using RON.
 
 <p align="center">
-	<img alt="Smart tile placement" src="./screenshots/tile_placement_demo.gif" />
+	<img alt="Smart tile placement" src="https://raw.githubusercontent.com/MrGVSV/bevy_tileset/b81d2d7483785e5aa58ef0b449482d9d57bca3be/screenshots/tile_placement_demo.gif" />
 </p>
 
-> All GIFs generated with the [`bevy_ecs_tilemap_tileset`](bevy_ecs_tilemap_tileset/) sub-crate
+> All GIFs generated with the [`bevy_tileset_map`](https://github.com/MrGVSV/bevy_tileset_map) crate
 
 ## 📋 Features
 
@@ -23,12 +23,8 @@ Add one of the following lines to your `Cargo.toml`.
 
 ```toml
 [dependencies]
-bevy_tileset_tiles = "0.2" # For the base tile definitions
-bevy_tileset = "0.2" # For general tileset usage (includes above)
-
-# The bevy_ecs_tilemap integration crate has not yet been published
-# So the you will need to get it from the git
-bevy_ecs_tilemap_tileset = { git = "https://github.com/MrGVSV/bevy_tileset", version = "0.2" }
+bevy_tileset_tiles = "0.7" # For the base tile definitions
+bevy_tileset = "0.7" # For general tileset usage (includes above)
 ```
 
 ## ✨ Usage
@@ -38,20 +34,20 @@ Simply **define** your tiles and tilesets in config files:
 ```rust
 // assets/tiles/my_tile.ron
 (
-  name: "My Tile",
-  tile: Standard("textures/my_tile.png")
+name: "My Tile",
+tile: Standard("textures/my_tile.png")
 )
 ```
 
 ```rust
 // assets/my_tileset.ron
 (
-  name: Some("My Awesome Tileset"),
-  id: 0,
-  tiles: {
-    0: "../tiles/my_tile.ron",
-    // ...
-  }
+name: Some("My Awesome Tileset"),
+id: 0,
+tiles: {
+0: "../tiles/my_tile.ron",
+// ...
+}
 )
 ```
 
@@ -62,8 +58,8 @@ use bevy::prelude::*;
 use bevy_tileset::prelude::*;
 
 fn load_tiles(asset_server: Res<AssetServer>) {
-  let handle: Handle<Tileset> = asset_server.load("my_tileset.ron");
-  // Store handle...
+    let handle: Handle<Tileset> = asset_server.load("my_tileset.ron");
+    // Store handle...
 }
 ```
 
@@ -71,14 +67,13 @@ Then **access** the generated tileset from anywhere:
 
 ```rust
 fn my_system(tilesets: Tilesets, /* other system params */) {
-  
-  let tileset = tilesets.get_by_name("My Awesome Tileset").unwrap();
-  let tile_index = tileset.get_tile_index("My Tile").unwrap();
-  
-  match tile_index {
-    TileIndex::Standard(texture_index) => { /* Do something */ },
-    TileIndex::Animated(start, end, speed) => { /* Do something */ },
-  }
+    let tileset = tilesets.get_by_name("My Awesome Tileset").unwrap();
+    let tile_index = tileset.get_tile_index("My Tile").unwrap();
+
+    match tile_index {
+        TileIndex::Standard(texture_index) => { /* Do something */ }
+        TileIndex::Animated(start, end, speed) => { /* Do something */ }
+    }
 }
 ```
 
@@ -94,8 +89,8 @@ Defines a basic tile.
 // assets/tiles/my-tile.ron
 
 (
-  name: "My Tile",
-  tile: Standard("textures/my_tile.png")
+name: "My Tile",
+tile: Standard("textures/my_tile.png")
 )
 ```
 
@@ -107,15 +102,15 @@ Defines an animated tile that can be generated with the `GPUAnimated` component 
 // assets/tiles/my-animated-tile.ron
 
 (
-  name: "My Animated Tile",
-  tile: Animated((
-    speed: 2.25,
-    frames: [
-      "textures/animated-001.png",
-      "textures/animated-002.png",
-      "textures/animated-003.png",
-    ]
-  ))
+name: "My Animated Tile",
+tile: Animated((
+speed: 2.25,
+frames: [
+"textures/animated-001.png",
+"textures/animated-002.png",
+"textures/animated-003.png",
+]
+))
 )
 ```
 
@@ -123,34 +118,35 @@ Defines an animated tile that can be generated with the `GPUAnimated` component 
 
 > With the `variants` feature enabled
 
-Defines a tile that has a set of possible variants. A random variant is chosen at random when placed. These variants can either be Standard or Animated.
+Defines a tile that has a set of possible variants. A variant is chosen at random when placed. These variants can either
+be Standard or Animated.
 
 ```rust
 // assets/tiles/my-variant-tile.ron
 
 (
-  name: "My Crazy Random Tile",
-  tile: Variant([
-    (
-      weight: 1.0,
-      tile: Standard("textures/variant-standard-001.png")
-    ),
-    (
-      // Default weight: 1.0
-      tile: Standard("textures/variant-standard-002.png")
-    ),
-    (
-      weight: 0.0001, // Wow that's rare!
-      tile: Animated((
-      	// Default speed: 1.0
-        frames: [
-          "textures/variant-animated-001.png",
-          "textures/variant-animated-002.png",
-          "textures/variant-animated-003.png",
-        ]
-      ))
-    )
-  ])
+name: "My Crazy Random Tile",
+tile: Variant([
+(
+weight: 1.0,
+tile: Standard("textures/variant-standard-001.png")
+),
+(
+// Default weight: 1.0
+tile: Standard("textures/variant-standard-002.png")
+),
+(
+weight: 0.0001, // Wow that's rare!
+tile: Animated((
+// Default speed: 1.0
+frames: [
+"textures/variant-animated-001.png",
+"textures/variant-animated-002.png",
+"textures/variant-animated-003.png",
+]
+))
+)
+])
 )
 ```
 
@@ -158,7 +154,8 @@ Defines a tile that has a set of possible variants. A random variant is chosen a
 
 > With the `auto-tile` feature enabled
 
-Defines a tile that automatically chooses its active tile based on its neighbors. This behavior can be controlled with rules. These sub-tiles are themselves Variant tiles.
+Defines a tile that automatically chooses its active tile based on its neighbors. This behavior can be controlled with
+rules. These sub-tiles are themselves Variant tiles.
 
 ```rust
 // assets/tiles/my-auto-tile.ron
@@ -166,73 +163,81 @@ Defines a tile that automatically chooses its active tile based on its neighbors
 #![enable(implicit_some)]
 
 (
-  name: "My Auto Tile",
-  tile: Auto([
-    (
-      rule: (
-        north: true,
-        east: false,
-        west: true,
-      ),
-      variants: [
-        (
-          tile: Standard("textures/n_w-e-001.png")
-        ),
-        (
-          weight: 2.0, 
-          tile: Standard("textures/n_w-e-002.png")
-        )
-      ]
-    ),
-    (
-      rule: (
-        // Also supports short notation
-        n: false,
-        s: false,
-        // And ordinal directions
-        south_west: true,
-        nw: false
-      ),
-      variants: [
-        (
-          tile: Standard("textures/sw-n_s_nw.png")
-        )
-      ]
-    ),
-  ])
+name: "My Auto Tile",
+tile: Auto([
+(
+rule: (
+north: true,
+east: false,
+west: true,
+),
+variants: [
+(
+tile: Standard("textures/n_w-e-001.png")
+),
+(
+weight: 2.0,
+tile: Standard("textures/n_w-e-002.png")
+)
+]
+),
+(
+rule: (
+// Also supports short notation
+n: false,
+s: false,
+// And ordinal directions
+south_west: true,
+nw: false
+),
+variants: [
+(
+tile: Standard("textures/sw-n_s_nw.png")
+)
+]
+),
+])
 )
 ```
 
-![Auto tiling](./screenshots/auto_tiling_demo.gif)
+<p align="center">
+	<img alt="Auto tiling" src="https://github.com/MrGVSV/bevy_tileset/blob/b81d2d7483785e5aa58ef0b449482d9d57bca3be/screenshots/auto_tiling_demo.gif" />
+</p>
 
 ## 🎓 Examples
 
 * [tileset](examples/tileset.rs) - Simply load and display a tileset
 * [dynamic](examples/dynamic.rs) - Dynamically create a tileset at runtime
-* [clickable](bevy_ecs_tilemap_tileset/examples/clickable.rs) - Add and remove tiles using `bevy_ecs_tilemap` and `bevy_ecs_tilemap_tileset`
 
-Also, be sure to check out  the [assets](bevy_ecs_tilemap_tileset/assets/) folder for how to define a tile or tileset.
+Also, be sure to check out the [assets](/assets/) folder for how to define a tile or tileset.
 
 ## 🌱 Areas of Growth
 
 There are some things this crate could do better in. Here's a list of potential areas to grow:
 
 - [x] Tileset
-  - [x] Config files ★
+    - [x] Config files ★
 - [ ] Improved Auto Tiles
-  - [ ] Mirror/Rotation (designate a rule to be mirrored or rotated)
+    - [ ] Mirror/Rotation (designate a rule to be mirrored or rotated)
 - [x] Loading
-  - [x] Load configs as assets
+    - [x] Load configs as assets
 
 As well as just an overall improved and cleaner API.
 
 ## 🎵 Important Note
 
-These tiles are defined with the [`bevy_ecs_tilemap`](https://github.com/StarArawn/bevy_ecs_tilemap) crate in mind. Therefore, it's meant to work with an index-based tile system (where a tile's texture is defined as an index into a texture atlas). Other solutions may need to be adapted in order to work with this crate.
+These tiles are defined with the [`bevy_ecs_tilemap`](https://github.com/StarArawn/bevy_ecs_tilemap) crate in mind.
+Therefore, it's meant to work with an index-based tile system (where a tile's texture is defined as an index into a
+texture atlas). Other solutions may need to be adapted in order to work with this crate.
 
 ## 🕊 Bevy Compatibility
 
 | bevy | bevy_tileset |
-| ---- | ------------ |
+|------|--------------|
+| 0.10 | 0.7          |
+| 0.9  | 0.6          |
+| 0.8  | 0.5          |
+| 0.7  | 0.4          |
+| 0.6  | 0.3          |
 | 0.5  | 0.2          |
 
